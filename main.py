@@ -40,7 +40,7 @@ async def transcribe(*,project_name: str = Form(...),files: List[UploadFile] = F
 @app.get('/download/{project_name}/{file_path}/')
 async def download(project_name,file_path):
   Connect.config()
-  Connect.s3()
+  s3 = Connect.s3()
   zip_url = s3.generate_presigned_url(ClientMethod='get_object', 
                                       Params={'Bucket': config['S3SETTINGS']['bucket'], 
                                       'Key': config['S3SETTINGS']['folder']+project_name+"/"+file_path},
@@ -51,7 +51,7 @@ async def download(project_name,file_path):
 
 @app.post('/create_new_users')
 async def create_user(request: Request, email_id: str = Form(...), username: str = Form(...), password: str = Form(...)):
-  Connect.db()
+  mydb = Connect.db()
   new_user_cursor = mydb.cursor()
   query = "INSERT into Users(email_id,username,password) values(%s,%s,%s)"
   hash_password= bcrypt.hash(password)
@@ -70,7 +70,7 @@ async def create_project(request: Request, username):
 
 @app.post('/{username}/add_new_project')
 async def new_project(*,project_name: str = Form(...), username):
-  Connect.db()
+  mydb = Connect.db()
   add_project_cursor = mydb.cursor()
   query = "INSERT into Projects(project_name,username) values(%s,%s)"
   add_project = [(project_name, username),]
@@ -90,7 +90,7 @@ async def new_project(*,project_name: str = Form(...), username):
 
 @app.get('/{username}/records/{use_id}', response_class=HTMLResponse)
 async def get_records(request: Request):
-  Connect.db()
+  mydb = Connect.db()
   use_id = request.path_params['use_id']
   username = request.path_params['username']
   record_cursor = mydb.cursor()
@@ -107,7 +107,7 @@ async def get_records(request: Request):
 
 @app.get('/home/{username}/{use_id}/')
 async def user(request: Request):
-  Connect.db()
+  mydb = Connect.db()
   dir_name = str(uuid.uuid4())
   use_id = request.path_params['use_id']
   username = request.path_params['username']

@@ -16,7 +16,15 @@ import docx
 
 
 class Connect:
+    def config():
+        global config
+        config = configparser.ConfigParser()
+        config.read("config.ini", encoding='utf-8')
+        return config
+
+
     def initiate_db():
+        Connect.config()
         db = mysql.connector.connect(
             host=config['MySQL']['host'], 
             user=config['MySQL']['user'], 
@@ -39,6 +47,7 @@ class Connect:
 
     def db():
         global mydb
+        Connect.config()
         mydb = mysql.connector.connect(
             host=config['MySQL']['host'], 
             user=config['MySQL']['user'], 
@@ -51,18 +60,12 @@ class Connect:
 
     def s3():
         global s3
+        Connect.config()
         s3 = boto3.client('s3', 
                     aws_access_key_id=config['S3SETTINGS']['access_key_id'], 
                     aws_secret_access_key=config['S3SETTINGS']['secret_key_id'], 
                     region_name=config['S3SETTINGS']['region'])
         return s3
-
-
-    def config():
-        global config
-        config = configparser.ConfigParser()
-        config.read("config.ini", encoding='utf-8')
-        return config
 
 
 
@@ -217,8 +220,8 @@ def json_data_extraction(result,fname):
 
 def start_transcribe(project_name,files,dir_name,use_id,username):
     Connect.config()
-    Connect.db()
-    Connect.s3()
+    mydb = Connect.db()
+    s3 = Connect.s3()
     token = config['AssemblyAI']['token_id']
     os.makedirs("documents/"+dir_name+"/"+project_name, exist_ok=True)
     html = ""
